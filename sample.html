@@ -1,0 +1,311 @@
+<!--Project 02-->
+<!--Created by: Allan Daum, Kyle Cregan, Jeremiah Bortmas, Devin Shreckengost -->
+<!--10/16/17 - Current -->
+<html>
+	<head>
+		<title>
+			Project: Game
+		</title>
+		<style>
+			body
+			{
+				background-color: #f3c04a;
+			}
+			#controlPanel{
+				
+				float: right;
+			}
+			#board{
+				float: left;
+			}
+		</style>
+        <script>
+		var chute = [24,32,36,55,75,77,80]
+		var chuteNew = [7,3,17,37,38,49,30]
+		var ladder = [1,4,8,25,35,46,56]
+		var ladderNew = [22,13,28,70,39,65,72]
+		
+        var tempRoll = 0;
+		var count=0;
+        var player1 = 0;
+        var player2 = 0;
+		var pTracker = 1;
+		var imageTemp1 =0;
+		var imageTemp2 =0;
+		var p1Temp = 0;
+		var p2Temp = 0;
+		
+		function selectPlayer(imageSource)
+        {
+            //start up for player1 and player2 to chose images
+			if(count==0)
+            {
+				document.getElementById("player1Img").src = imageSource;
+				document.getElementById("image1").src = "image/player2Image1.jpg";
+				document.getElementById("image1").alt = "dog";
+				document.getElementById("image2").src = "image/player2Image2.jpg";
+				document.getElementById("image1").alt = "dolphin";
+				document.getElementById("image3").src = "image/player2Image3.jpg";
+				document.getElementById("image1").alt = "deer";
+				document.getElementById("info").innerHTML = "Select an image for Player 2:";
+				count++;
+			}
+			else
+            {
+				document.getElementById("player2Img").src = imageSource;
+				document.getElementById("playerImgDiv").style = "display: none;";
+				document.getElementById("controlPanel").style = "display: inherit;";
+				loadBoard();
+			}
+		}
+	
+		function loadBoard()
+        {
+            //once images are chose, load and create the board
+			var text='<table id="board" style="background-image: url(image/tableBackground.jpg)"; cellpadding="0" cellspacing="0">';
+			for(var i=9; i> 0; i--)
+            {
+				text+='<tr>';
+				if(i%2==1)
+                {	
+					for(var j=8; j>=0; j--)
+                    {
+						var image= (i*9) -j;
+                        text+="<td><img id='space"+image+"'  width='66' height='66'></td>";  
+					}
+				}
+				else
+                {
+					for(var j=0; j< 9; j++)
+                    {
+						var image= (i*9) -j;
+                        text+="<td><img id='space"+image+"'  width='66' height='66'></td>";
+					}
+				}
+				text+='</tr>'
+			}
+			text+='</table>';
+			document.body.innerHTML += text;
+		}
+		
+		function roll(x)
+		{
+            //rolls the dice and calls WIN function
+			var roll1;
+			atBat();
+			for (i=0; i < x; i++)
+			{
+				roll1 = RandomInt (1, 6);
+				document.getElementById('die1').src = "http://www.balance3e.com/Images/die" + roll1 + ".gif";
+				tempRoll = roll1; console.log("temproll: " + tempRoll);
+				if (pTracker %2!=0)
+				{
+					imageTemp1 = player1;
+					player1 = player1 + tempRoll;
+					win (player1);
+				}
+				else
+				{
+					imageTemp2 = player2;
+					player2 = player2 + tempRoll;
+					win (player2);
+				}
+			}
+		}
+		
+		function win(pScore)
+		{
+            //checks to see if the player will land on space 81 if yes call VICTORY function
+			if (pScore == 81)
+			{
+				victory();
+			}
+			else if(pScore > 81)
+			{
+                //checks to see if the player rolls more than 81 and subtracts last roll
+				if (pTracker % 2 != 0)
+				{
+					player1 = player1 - tempRoll;
+					pTracker++;
+				}
+				else
+				{
+					player2 = player2 - tempRoll;
+					pTracker++;
+				}
+			}
+			else
+            {
+                //if both above conditions are met, move to CHECKCL function
+				checkCL ()
+			}
+		}
+		
+		function victory ()
+		{
+            //alerts for player 1 win and player 2 win
+			if(pTracker %2 != 0)
+			{
+				if (imageTemp1 > 0)
+				{
+					document.getElementById("space"+imageTemp1).src = "image/background.png";
+				}
+				document.getElementById("space"+player1).src = document.getElementById("player1Img").src;
+				alert("Player 1 VICTORY");
+			}
+			else
+			{
+				if (imageTemp2 > 0)
+				{
+					document.getElementById("space"+imageTemp2).src = "image/background.png";
+				}
+				document.getElementById("space"+player2).src = document.getElementById("player2Img").src;	
+				alert("Player 2 VICTORY");
+			}
+		}
+		
+		function checkCL ()
+        {
+            //checks to see if a player lands on a CHUTE or LADDER and moves to the appropiate space if YES
+            var chuteOrLadder = false;
+			if (pTracker %2 != 0)
+			{
+				for (var i = 0; i < 7; i++)
+				{
+					if(player1 == chute[i])
+					{ 
+                        console.log("PLAYER1 IN CHUTE");
+						chuteOrLadder = true;
+						p1Temp = player1;
+						player1 = chuteNew[i];
+						canMove();
+					}
+					else if(player1 == ladder[i])
+					{ 
+                        console.log("PLAYER1 IN LADDER");
+						chuteOrLadder = true;
+						p1Temp = player1;
+						player1 = ladderNew[i];
+						canMove();
+					}
+				}
+				if (chuteOrLadder == false)
+                {
+                    //if not a CHUTE or LADDER moves to the CANMOVE function
+					canMove();
+				}
+			}
+			else
+			{
+				for (var i = 0; i < 7; i++)
+				{
+					if(player2 == chute[i])
+					{ console.log("PLAYER2 IN CHUTE");
+						chuteOrLadder = true;
+						p2Temp = player2;
+						player2 = chuteNew[i];
+
+						canMove();
+					}
+					else if(player2 == ladder[i])
+					{ 
+                        console.log("PLAYER2 IN LADDER");
+						chuteOrLadder = true;
+						p2Temp = player2;
+						player2 = ladderNew[i];
+						canMove();
+					}
+				}
+				if (chuteOrLadder == false)
+                {
+					canMove();
+				}
+			}
+		}
+		
+            function canMove()
+            {
+                //will check to see if player1 and player 2 are on the same spot, if the player can move it wil lcall the MOVE function
+                var movable = true;
+		
+                if (pTracker % 2 != 0)
+                {
+				    if (player1 == player2)
+                    {
+					   movable = false;
+					   player1 = player1 - tempRoll;
+					   pTracker++;
+				    }
+				    else
+				    {
+					   move();
+				    }
+                }
+                else
+                {
+				    if (player1 == player2)
+                    {
+					   movable = false;
+					   player2 = player2 - tempRoll;
+					   pTracker++;
+				    }
+				    else
+				    {
+					   move();
+				    }
+			     }
+		      }
+
+		function move()
+        {
+            //moves the player image around the board by replacing and placing images based on player location
+			if (pTracker % 2 != 0)
+			{ 
+				if (imageTemp1 > 0)
+				{
+					document.getElementById("space"+imageTemp1).src = "image/background.png";
+				}
+				document.getElementById("space"+player1).src = document.getElementById("player1Img").src;	
+			}
+			else
+			{ 
+				if (imageTemp2 > 0)
+				{
+					document.getElementById("space"+imageTemp2).src = "image/background.png";
+				}
+				document.getElementById("space"+player2).src = document.getElementById("player2Img").src
+			}
+			pTracker++;
+		}
+		
+		function atBat()
+        {
+            //shows above the dice who is at bat.
+            var upNext = pTracker%2 + 1;
+			document.getElementById("player").innerHTML = "Up next: Player " + upNext;
+		}
+		</script>
+		<script src="http://balance3e.com/random.js"></script>
+	</head>
+	<body>
+		<div id="playerImgDiv">
+			<p id="info"> Select an image for Player 1: </p>
+			<img id="image1" onclick="selectPlayer(this.src)" src="image/player1Image1.jpg" alt="bear">
+			<img id="image2" onclick="selectPlayer(this.src)" src="image/player1Image2.jpg" alt="cat">
+			<img id="image3" onclick="selectPlayer(this.src)" src="image/player1Image3.jpg" alt="bison">
+			<br>
+		</div>
+		<div id="controlPanel">
+			<h2>Control Panel</h2>
+			<h4>Player 1<h4>
+			<img id="player1Img" alt="Player1" height="150" width="150">
+			<br><br><br>
+			<p id="player">Player 1</p>
+			<image src="http://www.balance3e.com/Images/die1.gif"/ id="die1" height="150" width="150">
+			<br>
+			<input type="button" value="Roll Die" onclick="roll (1)"><br>
+			<h4> Player 2</h4>
+			<img id="player2Img" alt="Player2" height="150" width="150">
+		</div>
+	</body>
+</html>
